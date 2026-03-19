@@ -123,7 +123,7 @@ See the [installation instructions](https://aider.chat/docs/install.html) and [u
 
 ## Skill-aware mode
 
-This fork includes an optional teaching-oriented debugging mode. Enable it with:
+This fork includes an teaching-oriented debugging mode. Enable it with:
 
 ```bash
 aider --skill-aware
@@ -136,6 +136,16 @@ aider --model sonnet --api-key anthropic=<key> --skill-aware
 ```
 
 When enabled, aider rewrites vague debugging requests into a more guided prompt style and prints a "Skill Coach" summary after responses to help explain the diagnosis, fix, and verification steps.
+
+### Steps:
+1. Clone the repo
+2. run in the code base where you want to use aider
+```bash
+ ..\path\to\aider.exe --model ollama_chat/qwen2.5:1.5b --skill-aware
+```
+3. ask vague questions such as "fix bugs in d2p1.py"
+4. ask explicit questions such as "The bug is in the loop header. Explain the exact failing line, then make the smallest correct fix only."
+
 
 ## More Information
 
