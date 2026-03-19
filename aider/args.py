@@ -846,6 +846,12 @@ def get_parser(default_config_files, git_root):
         help="Enable/disable detection and offering to add URLs to chat (default: True)",
     )
     group.add_argument(
+        "--skill-aware",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Enable/disable skill-aware debugging guidance for teaching-oriented replies (default: False)",
+    )
+    group.add_argument(
         "--editor",
         help="Specify which editor to use for the /editor command",
     )

@@ -13,6 +13,10 @@ from aider.utils import ChdirTemporaryDirectory
 
 
 class TestInputOutput(unittest.TestCase):
+    def test_skill_coach_output_plain(self):
+        io = InputOutput(pretty=False)
+        io.skill_coach_output("## Diagnosis\nThe issue is visible.", pretty=False)
+
     def test_line_endings_validation(self):
         # Test valid line endings
         for ending in ["platform", "lf", "crlf"]:

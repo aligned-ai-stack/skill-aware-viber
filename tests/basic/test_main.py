@@ -289,6 +289,11 @@ class TestMain(TestCase):
             _, kwargs = MockCoder.call_args
             assert kwargs["dirty_commits"] is True
 
+        with patch("aider.coders.Coder.create") as MockCoder:
+            main(["--skill-aware"], input=DummyInput())
+            _, kwargs = MockCoder.call_args
+            assert kwargs["skill_aware"] is True
+
     def test_env_file_override(self):
         with GitTemporaryDirectory() as git_dir:
             git_dir = Path(git_dir)

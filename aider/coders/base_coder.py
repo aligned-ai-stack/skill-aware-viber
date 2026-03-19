@@ -46,6 +46,7 @@ from aider.reasoning_tags import (
 from aider.repo import ANY_GIT_ERROR, GitRepo
 from aider.repomap import RepoMap
 from aider.run_cmd import run_cmd
+from aider.skill_coach import build_skill_aware_prompt, format_skill_coach_summary
 from aider.utils import format_content, format_messages, format_tokens, is_image_file
 from aider.waiting import WaitingSpinner
 
@@ -289,6 +290,9 @@ class Coder:
         if self.done_messages:
             lines.append("Restored previous conversation history.")
 
+        if self.skill_aware:
+            lines.append("Skill-aware debugging coach: enabled")
+
         if self.io.multiline_mode:
             lines.append("Multiline mode: Enabled. Enter inserts newline, Alt-Enter submits text")
 
@@ -338,6 +342,7 @@ class Coder:
         file_watcher=None,
         auto_copy_context=False,
         auto_accept_architect=True,
+        skill_aware=False,
     ):
         # Fill in a dummy Analytics if needed, but it is never .enable()'d
         self.analytics = analytics if analytics is not None else Analytics()
@@ -352,6 +357,8 @@ class Coder:
 
         self.auto_copy_context = auto_copy_context
         self.auto_accept_architect = auto_accept_architect
+        self.skill_aware = skill_aware
+        self.last_user_input_raw = None
 
         self.ignore_mentions = ignore_mentions
         if not self.ignore_mentions:
@@ -916,8 +923,12 @@ class Coder:
         if self.commands.is_command(inp):
             return self.commands.run(inp)
 
+        self.last_user_input_raw = inp
         self.check_for_file_mentions(inp)
         inp = self.check_for_urls(inp)
+
+        if self.skill_aware:
+            inp = build_skill_aware_prompt(inp)
 
         return inp
 
@@ -1595,6 +1606,14 @@ class Coder:
 
         if self.reflected_message:
             return
+
+        if self.skill_aware and self.last_user_input_raw:
+            coach_summary = format_skill_coach_summary(
+                self.last_user_input_raw,
+                content,
+                edited=bool(edited),
+            )
+            self.io.skill_coach_output(coach_summary, pretty=self.show_pretty())
 
         if edited and self.auto_lint:
             lint_errors = self.lint_edited(edited)

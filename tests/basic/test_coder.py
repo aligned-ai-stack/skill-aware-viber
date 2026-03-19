@@ -8,6 +8,7 @@ import git
 
 from aider.coders import Coder
 from aider.coders.base_coder import FinishReasonLength, UnknownEditFormat
+from aider.skill_coach import assess_user_skill, format_skill_coach_summary
 from aider.dump import dump  # noqa: F401
 from aider.io import InputOutput
 from aider.models import Model
@@ -100,6 +101,45 @@ class TestCoder(unittest.TestCase):
             fname.write_text("dirty!")
             self.assertTrue(coder.allowed_to_edit("added.txt"))
             self.assertTrue(coder.need_commit_before_edits)
+
+    def test_skill_aware_preproc_wraps_novice_requests(self):
+        coder = Coder.create(self.GPT35, None, io=InputOutput(pretty=False), skill_aware=True)
+
+        message = coder.preproc_user_input("I am new to TypeScript, please just fix this build error")
+
+        self.assertIn("<skill_aware_debugging>", message)
+        self.assertIn("teaching-oriented debugging style", message)
+        self.assertIn("please just fix this build error", message)
+
+    def test_skill_assessment_scaffolds_vague_fix_requests(self):
+        assessment = assess_user_skill("fix bugs in d2p1.py")
+
+        self.assertTrue(assessment.should_scaffold)
+        self.assertTrue(assessment.blind_reliance_risk)
+
+    def test_skill_assessment_detects_intermediate_debugging_language(self):
+        assessment = assess_user_skill(
+            "Failure target: frontend build\n"
+            "Observed issue: TypeScript property access error\n"
+            "Likely cause: undefined state before render\n"
+            "Confidence: medium"
+        )
+
+        self.assertEqual(assessment.level, "intermediate")
+        self.assertFalse(assessment.blind_reliance_risk)
+
+    def test_skill_coach_summary_uses_structured_blocks(self):
+        summary = format_skill_coach_summary(
+            "fix bugs in d2p1.py",
+            "The bug happens because enumerate(s) returns two values but the loop expects three. Change `for i, c, d` to `for i, c`.",
+            edited=True,
+        )
+
+        self.assertIn("## Inferred Debug Brief", summary)
+        self.assertIn("## Better Debug Query", summary)
+        self.assertIn("## Diagnosis", summary)
+        self.assertIn("## Fix", summary)
+        self.assertIn("## Verification", summary)
 
     def test_get_files_content(self):
         tempdir = Path(tempfile.mkdtemp())

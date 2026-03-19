@@ -30,6 +30,7 @@ from rich.color import ColorParseError
 from rich.columns import Columns
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.panel import Panel
 from rich.style import Style as RichStyle
 from rich.text import Text
 
@@ -1039,6 +1040,23 @@ class InputOutput:
             show_resp = Text(message or "(empty response)")
 
         self.console.print(show_resp)
+
+    def skill_coach_output(self, message, pretty=None):
+        if not message:
+            return
+
+        if pretty is None:
+            pretty = self.pretty
+
+        self.append_chat_history("Skill Coach\n" + message, linebreak=True, blockquote=True)
+
+        if pretty:
+            body = Markdown(message, style=self.assistant_output_color, code_theme=self.code_theme)
+            panel = Panel(body, title="Skill Coach", border_style="bright_cyan", padding=(0, 1))
+            self.console.print(panel)
+        else:
+            self.tool_output("[Skill Coach]")
+            self.tool_output(message)
 
     def set_placeholder(self, placeholder):
         """Set a one-time placeholder text for the next input prompt."""

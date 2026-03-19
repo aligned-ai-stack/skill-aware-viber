@@ -121,6 +121,22 @@ aider --model o3-mini --api-key openai=<key>
 
 See the [installation instructions](https://aider.chat/docs/install.html) and [usage documentation](https://aider.chat/docs/usage.html) for more details.
 
+## Skill-aware mode
+
+This fork includes an optional teaching-oriented debugging mode. Enable it with:
+
+```bash
+aider --skill-aware
+```
+
+You can combine it with your normal model flags, for example:
+
+```bash
+aider --model sonnet --api-key anthropic=<key> --skill-aware
+```
+
+When enabled, aider rewrites vague debugging requests into a more guided prompt style and prints a "Skill Coach" summary after responses to help explain the diagnosis, fix, and verification steps.
+
 ## More Information
 
 ### Documentation
